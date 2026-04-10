@@ -36,28 +36,28 @@ def read_gpx(filepath):
 	return name, points
 
 def get_city(lat, lon, retries=3):
-    for attempt in range(retries):
-        try:
-            location = geolocator.reverse(f"{lat}, {lon}", language="en")
-            address = location.raw['address']
-            return (
-                address.get('city') or
-                address.get('town') or
-                address.get('village') or
-                address.get('county') or
-                "Unknown"
-            )
-        except GeocoderTimedOut:
-            if attempt < retries - 1:
-                time.sleep(1)
-                continue
-            return "Timeout"
-        except Exception as e:
-            return f"Error: {e}"
+	for attempt in range(retries):
+		try:
+			location = geolocator.reverse(f"{lat}, {lon}", language="en")
+			address = location.raw['address']
+			return (
+				address.get('city') or
+				address.get('town') or
+				address.get('village') or
+				address.get('county') or
+				"Unknown"
+			)
+		except GeocoderTimedOut:
+			if attempt < retries - 1:
+				time.sleep(1)
+				continue
+			return "Timeout"
+		except Exception as e:
+			return f"Error: {e}"
 
 m = folium.Map(location=[44.967243, -103.771556], zoom_start=5, tiles='CartoDB positron')
 colors = colorgen()
-gpx_files = os.listdir()
+gpx_files = os.listdir('gpx')
 gpx_files.sort()
 
 for this_file in gpx_files:
@@ -68,33 +68,83 @@ for this_file in gpx_files:
 		this_weight = 4
 	else:
 		this_weight = 1.5
-	name, points = read_gpx(this_file)
+	name, points = read_gpx(os.path.join('gpx', this_file))
 	geojson = {
-	    "type": "Feature",
-	    "geometry": {
-	        "type": "LineString",
-	        "coordinates": [[lon, lat] for lat, lon in points]  # GeoJSON uses [lon, lat]
-	    }
+		"type": "Feature",
+		"properties": {
+			"name": name        # store name in properties
+		},
+		"geometry": {
+			"type": "LineString",
+			"coordinates": [[lon, lat] for lat, lon in points]  # GeoJSON uses [lon, lat]
+		}
 	}
 	# folium.PolyLine(points, color=this_color, weight=3).add_to(m)
 	folium.GeoJson(
-	    geojson,
-	    style_function=lambda f, c=this_color, w=this_weight: {
-	        "color": c,
-	        "weight": w,
-	        "opacity": 0.85
-	    },
-	    highlight_function=lambda f, c=this_color: {
-	        "color":c,
-	        "weight": 6,
-	        "opacity": 1.0
-	    },
-	    tooltip=name
+		geojson,
+		style_function=lambda f, c=this_color, w=this_weight: {
+			"color": c,
+			"weight": w,
+			"opacity": 0.85
+		},
+		highlight_function=lambda f, c=this_color: {
+			"color":c,
+			"weight": 9,
+			"opacity": 1.0
+		},
+		tooltip=folium.GeoJsonTooltip(
+			fields=["name"],            # which properties to show
+			aliases=[""],
+			style="""
+				font-size: 14px;
+				font-weight: normal;
+				font-family: Helvetica;
+				color: #000000;
+				background-color: white;
+				border: 1px solid grey;
+				border-radius: 4px;
+				padding: 4px;
+				text-align: center;
+			"""
+		)
 	).add_to(m)
 	this_city = get_city(*points[0])
-	folium.Marker(points[0],  popup=this_city, icon=folium.Icon(color='green')).add_to(m)
+	folium.Marker(
+	    location=points[0],
+	    popup=folium.Popup(
+	        html=f"""
+	            <div style='
+	                font-size: 14px;
+	                font-weight: bold;
+	                text-align: center;
+	                min-width: 120px;
+	                color: #333;
+	            '>
+	                {this_city}
+	            </div>
+	        """,
+	        max_width=200
+	    ), 
+	    icon=folium.Icon(color='green')
+	).add_to(m)
 this_city = get_city(*points[-1])
-folium.Marker(points[-1], popup=this_city,   icon=folium.Icon(color='red')).add_to(m)
+folium.Marker(
+	    location=points[0],
+	    popup=folium.Popup(
+	        html=f"""
+	            <div style='
+	                font-size: 14px;
+	                font-weight: bold;
+	                text-align: center;
+	                min-width: 120px;
+	                color: #333;
+	            '>
+	                {this_city}
+	            </div>
+	        """,
+	        max_width=200
+	    ),
+	    icon=folium.Icon(color='red')
+	).add_to(m)
 
-
-m.save("map.html")
+m.save("routemap.html")
