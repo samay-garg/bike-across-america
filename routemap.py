@@ -55,7 +55,7 @@ def get_city(lat, lon, retries=3):
 		except Exception as e:
 			return f"Error: {e}"
 
-m = folium.Map(location=[44.967243, -103.771556], zoom_start=5, tiles='CartoDB positron')
+m = folium.Map(location=[44.967243, -103.771556], zoom_start=5, tiles=None, prefer_canvas=True)
 colors = colorgen()
 gpx_files = os.listdir('gpx')
 gpx_files.sort()
@@ -106,7 +106,8 @@ for this_file in gpx_files:
 				padding: 4px;
 				text-align: center;
 			"""
-		)
+		),
+		control=False
 	).add_to(m)
 	this_city = get_city(*points[0])
 	folium.Marker(
@@ -146,5 +147,13 @@ folium.Marker(
 	    ),
 	    icon=folium.Icon(color='red')
 	).add_to(m)
+folium.TileLayer("OpenStreetMap",        name="Street Map").add_to(m)
+folium.TileLayer("CartoDB dark_matter",  name="Dark").add_to(m)
+folium.TileLayer("Esri WorldImagery",    name="Satellite").add_to(m)
+folium.TileLayer("CartoDB positron",     name="Minimal").add_to(m)
+folium.LayerControl(
+    position='bottomleft',    # 'topleft', 'topright', 'bottomleft', 'bottomright'
+    collapsed=False         # True means it starts as a small icon, False shows it open
+).add_to(m)
 
 m.save("routemap.html")
