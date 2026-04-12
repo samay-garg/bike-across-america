@@ -1,5 +1,6 @@
 # Virtual environment
 .venv/
+.env
 
 # Python
 __pycache__/
@@ -12,8 +13,11 @@ __pycache__/
 
 # Sensitive files
 strava_pull.py
+stravareader.py
 
 # Office temp files
 maps/
 *.xlsx
 *.ai
+*.csv
+*.json

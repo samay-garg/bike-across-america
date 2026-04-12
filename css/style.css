@@ -10,16 +10,34 @@ body {
   color: #333;
 }
 
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: #000;
+}
+
 nav {
   display: flex;
-  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
   padding: 1rem 2rem;
-  background: #000;
 }
 
 nav a {
   color: white;
   text-decoration: none;
+}
+
+.brand {
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 0.03em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
 }
 
 main {

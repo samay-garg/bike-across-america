@@ -166,9 +166,8 @@ folium.Marker(
 	).add_to(m)
 folium.TileLayer("OpenStreetMap", name="Street Map").add_to(m)
 folium.TileLayer("Esri WorldImagery", name="Satellite").add_to(m)
-folium.TileLayer("CartoDB positron", name="Minimal").add_to(m)
+folium.TileLayer("CartoDB Voyager", name="Minimal").add_to(m)
 folium.TileLayer("CartoDB dark_matter", name="Dark").add_to(m)
-folium.TileLayer("CartoDB Voyager", name="Voyager").add_to(m)
 folium.TileLayer("Esri WorldTopoMap", name="Topo Map").add_to(m)
 folium.LayerControl(
     position='topright',
