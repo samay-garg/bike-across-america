@@ -30,9 +30,9 @@ def read_gpx(filepath):
 			for trkpt in trkseg.findall('gpx:trkpt', NS):
 				lat  = float(trkpt.get('lat'))
 				lon  = float(trkpt.get('lon'))
-				ele  = trkpt.findtext('gpx:ele',  default='N/A', namespaces=NS)
+				ele  = float(trkpt.findtext('gpx:ele',  default='N/A', namespaces=NS))
 				time = trkpt.findtext('gpx:time', default='N/A', namespaces=NS)
-				points.append((lat, lon))
+				points.append((lat, lon, ele))
 	return name, points
 
 def get_city(lat, lon, retries=3):
@@ -76,7 +76,7 @@ for this_file in gpx_files:
 		},
 		"geometry": {
 			"type": "LineString",
-			"coordinates": [[lon, lat] for lat, lon in points]  # GeoJSON uses [lon, lat]
+			"coordinates": [[lon, lat] for lat, lon, _ in points]  # GeoJSON uses [lon, lat]
 		}
 	}
 	# folium.PolyLine(points, color=this_color, weight=3).add_to(m)
@@ -109,9 +109,16 @@ for this_file in gpx_files:
 		),
 		control=False
 	).add_to(m)
-	this_city = get_city(*points[0])
+	
+	gain = 0
+	for i in range(1, len(points)):
+		diff = points[i][2] > points[i-1][2]
+		if diff > 0:
+			gain += diff
+	city_loc = (points[0][0], points[0][1])
+	this_city = get_city(*city_loc)
 	folium.Marker(
-	    location=points[0],
+	    location=city_loc,
 	    popup=folium.Popup(
 	        html=f"""
 	            <div style='
@@ -123,14 +130,24 @@ for this_file in gpx_files:
 	            '>
 	                {this_city}
 	            </div>
+	            <div style='
+	                font-size: 14px;
+	                font-weight: bold;
+	                text-align: center;
+	                min-width: 120px;
+	                color: #333;
+	            '>
+	                {gain} mi
+	            </div>
 	        """,
 	        max_width=200
 	    ), 
 	    icon=folium.Icon(color='green')
 	).add_to(m)
-this_city = get_city(*points[-1])
+city_loc = (points[-1][0], points[-1][1])
+this_city = get_city(*city_loc)
 folium.Marker(
-	    location=points[0],
+	    location=city_loc,
 	    popup=folium.Popup(
 	        html=f"""
 	            <div style='
@@ -147,13 +164,22 @@ folium.Marker(
 	    ),
 	    icon=folium.Icon(color='red')
 	).add_to(m)
-folium.TileLayer("OpenStreetMap",        name="Street Map").add_to(m)
-folium.TileLayer("CartoDB dark_matter",  name="Dark").add_to(m)
-folium.TileLayer("Esri WorldImagery",    name="Satellite").add_to(m)
-folium.TileLayer("CartoDB positron",     name="Minimal").add_to(m)
+folium.TileLayer("OpenStreetMap", name="Street Map").add_to(m)
+folium.TileLayer("Esri WorldImagery", name="Satellite").add_to(m)
+folium.TileLayer("CartoDB positron", name="Minimal").add_to(m)
+folium.TileLayer("CartoDB dark_matter", name="Dark").add_to(m)
+folium.TileLayer("CartoDB Voyager", name="Voyager").add_to(m)
+folium.TileLayer("Esri WorldTopoMap", name="Topo Map").add_to(m)
 folium.LayerControl(
-    position='bottomleft',    # 'topleft', 'topright', 'bottomleft', 'bottomright'
-    collapsed=False         # True means it starts as a small icon, False shows it open
+    position='topright',
+    collapsed=False
 ).add_to(m)
+
+m.get_root().html.add_child(folium.Element("""
+<style>
+  .leaflet-control-layers { font-size: 14px; }
+  .leaflet-control-layers-base label { font-size: 14px; }
+</style>
+"""))
 
 m.save("routemap.html")

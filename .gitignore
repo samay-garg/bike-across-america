@@ -1,0 +1,19 @@
+# Virtual environment
+.venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+~$*
+
+# Sensitive files
+strava_pull.py
+
+# Office temp files
+maps/
+*.xlsx
+*.ai
