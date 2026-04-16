@@ -52,6 +52,23 @@ h1 {
   margin-bottom: 1rem;
 }
 
+h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+
+.routes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.route-item {
+  grid-column: span 2;
+  position: relative;
+}
 
 footer {
   text-align: center;
