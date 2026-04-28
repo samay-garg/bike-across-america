@@ -11,16 +11,14 @@ __pycache__/
 .DS_Store
 ~$*
 
-# Sensitive files
-strava_pull.py
-stravareader.py
-
 # Office temp files
 maps/
 *.xlsx
 *.ai
 *.csv
 *.json
+!route_files/*.json
 *.kml
-inreach_pull.py
-pull_route.py
+
+contribute.html
+about.html
