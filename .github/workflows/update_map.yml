@@ -5,6 +5,9 @@ on:
     - cron: '0,30 * * * *'  # every 30 minutes
   workflow_dispatch:       # allows manual trigger from GitHub UI
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   update:
     runs-on: ubuntu-latest
