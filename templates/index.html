@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bike across America</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="index.html" class="brand">Samay Garg</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="activities.html">Daily Log</a>
+        <a href="routes.html">Routes</a>
+        <a href="routemap.html" target="_blank">Route Map</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Bike across America</h1>
+    <p>Biking across the country from New York City to San Francisco</p>
+
+    <div class="progress-container">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" style="width: {{ progress_pct }}%">
+          <div class="progress-marker">
+            <span class="progress-miles-label">{{ total_miles }} mi</span>
+          </div>
+        </div>
+      </div>
+      <div class="progress-labels">
+        <span>New York City</span>
+        <span>San Francisco</span>
+      </div>
+      <!-- <p class="progress-caption">{{ progress_pct }}% of the way there</p> -->
+    </div>
+
+    <iframe
+      src="routemap.html"
+      width=100%
+      height="600px"
+      style="border: none; display: block; margin: 0 auto;">
+    </iframe>
+  </main>
+
+  <footer>
+    <p>© 2026 Samay Garg </p>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Routes - Bike across America</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="index.html" class="brand">Samay Garg</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="activities.html">Daily Log</a>
+        <a href="routes.html">Routes</a>
+        <a href="routemap.html" target="_blank">Route Map</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="routes-grid">
+      {% for route in routes %}
+      {% if loop.index is odd %}
+      <div class="route-label">
+        <h2 class="route-label">Part {{ loop.index }}: {{ route.name }}</h2>
+        <p>Distance: {{ route.distance_mi }} mi</p>
+        <p>Elevation gain: {{ route.elevation_gain_ft }} ft</p>
+        <p>Time to complete: {{ route.days }} days</p>
+      </div>
+      <div class="route-item"><div class="strava-embed-placeholder" data-embed-type="route" data-embed-id="{{ route.id }}" data-full-width="true" data-style="standard" data-map-hash="{{ route.map_hash }}" data-from-embed="false"></div></div>
+      {% else %}
+      <div class="route-item"><div class="strava-embed-placeholder" data-embed-type="route" data-embed-id="{{ route.id }}" data-full-width="true" data-style="standard" data-map-hash="{{ route.map_hash }}" data-from-embed="false"></div></div>
+      <div class="route-label">
+        <h2 class="route-label">Part {{ loop.index }}: {{ route.name }}</h2>
+        <p>Distance: {{ route.distance_mi }} mi</p>
+        <p>Elevation gain: {{ route.elevation_gain_ft }} ft</p>
+        <p>Time to complete: {{ route.days }} days</p>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <script src="https://strava-embeds.com/embed.js"></script>
+  </main>
+
+  <footer>
+    <p>© 2026 Samay Garg </p>
+  </footer>
+
+</body>
+</html>

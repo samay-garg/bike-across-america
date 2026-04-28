@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Log - Bike across America</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <header>
+    <nav>
+      <a href="index.html" class="brand">Samay Garg</a>
+      <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="activities.html">Daily Log</a>
+        <a href="routes.html">Routes</a>
+        <a href="routemap.html" target="_blank">Route Map</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <div class="activities-grid">
+      {% for activity in activities %}
+      <div class="activity-label">
+        <h2>{{ activity.name }}</h2>
+        <p>{{ activity.date }}<span class="sep"></span>{{ activity.distance_mi }}<span class="sep"></span>{{ activity.elevation_gain_ft }}<span class="sep"></span>{{ activity.moving_time }}</p>
+        {% if activity.description %}
+        <p class="description">{{ activity.description }}</p>
+        {% endif %}
+        <a class="strava-link" href="https://www.strava.com/activities/{{ activity.id }}" target="_blank"><img src="images/strava_logo.svg" alt="View on Strava"></a>
+      </div>
+      <div class="activity-img">
+        {% if activity.img %}
+        <img src="{{ activity.img }}" alt="{{ activity.name }}">
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2026 Samay Garg </p>
+  </footer>
+
+</body>
+</html>

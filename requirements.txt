@@ -1,0 +1,12 @@
+contextily
+folium
+geopandas
+openpyxl
+shapely
+geopy
+jinja2
+pandas
+polyline
+python-dotenv
+requests
+stravalib
