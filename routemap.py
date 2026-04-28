@@ -1,14 +1,10 @@
 import folium
 import json
 import os
-from dotenv import load_dotenv
 import utils
-from datetime import datetime
-
-load_dotenv()
-
+from datetime import datetime, timezone
 def colorgen():
-    yield from ["#9656a2","#369acc","#95cf92","#f8e16f","#f4895f","#de324c","#6c584c"] * 5
+    yield from ["#de324c", "#f4895f", "#f8e16f", "#95cf92", "#369acc", "#9656a2", "#6c584c"] * 5
 
 # pull current location and stats from inreach
 inreach_data = utils.pull_inreach()
@@ -24,21 +20,6 @@ m = folium.Map(location=[lat, lon], zoom_start=5, tiles=None, prefer_canvas=True
 
 colors = colorgen()
 route_files = utils.quickfilter('route_files', '.json')
-
-folium.Marker(
-    location=(lat, lon),
-    popup=folium.Popup(
-        html=f"""
-            <div class='popup-title'>Samay Garg</div>
-            <div class='popup-detail'>{current_city}</div>
-            <div class='popup-detail'>{elevation:,.0f} ft</div>
-            <div class='popup-detail'>{velocity:.0f} mi/h</div>
-            <div class='popup-detail'>{timeval}</div>
-        """,
-        max_width=200
-    ),
-    icon=folium.Icon(color='blue', icon='bicycle', prefix='fa')
-).add_to(m)
 
 for this_file in route_files:
     if len(os.path.basename(this_file).split('_')[0]) == 2:
@@ -94,6 +75,20 @@ folium.Marker(
         max_width=200
     ),
     icon=folium.Icon(color='red')
+).add_to(m)
+
+folium.Marker(
+    location=(lat, lon),
+    popup=folium.Popup(
+        html=f"""
+            <div class='popup-title'>Samay Garg</div>
+            <div class='popup-detail'>{current_city}</div>
+            <div class='popup-detail'>{elevation:,.0f} ft</div>
+            <div class='popup-detail'>{velocity:.0f} mi/h</div>
+        """,
+        max_width=200
+    ),
+    icon=folium.Icon(color='blue', icon='bicycle', prefix='fa')
 ).add_to(m)
 
 folium.TileLayer("OpenStreetMap", name="Street Map").add_to(m)

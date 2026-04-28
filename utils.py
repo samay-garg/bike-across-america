@@ -1,18 +1,22 @@
 import re
 import os
 import time
+import math
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 import requests
 import json
+from stravalib import Client
+from polyline import decode
 
 load_dotenv()
 
 geolocator = Nominatim(user_agent="my_gps_app")
 
+# filter and sort files
 def quickfilter(folder, *args):
     allfiles = os.listdir(folder)
     allfiles.sort()
@@ -30,12 +34,13 @@ def quickfilter(folder, *args):
             filtered.append(os.path.join(folder, f))
     return filtered
 
-def try_serialize(v):
-    try:
-        json.dumps(v)
-        return v
-    except (TypeError, ValueError):
-        return str(v)
+# check if an input can be serialized for JSON output
+# def try_serialize(v):
+#     try:
+#         json.dumps(v)
+#         return v
+#     except (TypeError, ValueError):
+#         return str(v)
 
 def coerce(v):
     if v is None:
@@ -85,6 +90,7 @@ def read_gpx(filepath):
                 points.append((lat, lon, ele))
     return name, points
 
+# convert gpx file to a geojson dict
 def gpx_to_geojson(filepath):
     name, points = read_gpx(filepath)
     return {
@@ -133,9 +139,86 @@ def pull_inreach():
         if not desc:
             break
     extended_data = placemark.find('kml:ExtendedData', NS)
-    lat, lon, elev, timeval = 0, 0, 0, datetime.fromtimestamp(0, tz=timezone.utc)
     return xml_to_dict(extended_data)
 
+def serialize_strava(v):
+    try:
+        json.dumps(v)
+        return v
+    except (TypeError, ValueError):
+        if hasattr(v, 'model_dump'):
+            dumped = v.model_dump()
+            if isinstance(dumped, dict):
+                return {k: serialize_strava(val) for k, val in dumped.items()}
+            return serialize_strava(dumped)
+        if hasattr(v, '__iter__') and not isinstance(v, (str, bytes)):
+            try:
+                return [serialize_strava(i) for i in v]
+            except Exception:
+                return str(v)
+        if hasattr(v, '__dict__'):
+            return {k: serialize_strava(val) for k, val in vars(v).items()}
+        return str(v)
+
+def strava_to_json(activity):
+    details = {k: serialize_strava(v) for k, v in vars(activity).items() if k != 'id'}
+    return {str(activity.id): details}
+
+def compute_map_hash(route):
+    map_data = route['map']
+    if isinstance(map_data, dict):
+        polyline_str = map_data.get('summary_polyline') or map_data.get('polyline', '')
+    else:
+        match = re.search(r"summary_polyline='(.*?)'", str(map_data))
+        polyline_str = match[1] if match else ''
+    if not polyline_str:
+        return None
+    coords = decode(polyline_str)
+    lats = [c[0] for c in coords]
+    lons = [c[1] for c in coords]
+    center_lat = (min(lats) + max(lats)) / 2
+    center_lon = (min(lons) + max(lons)) / 2
+    span = max(max(lats) - min(lats), max(lons) - min(lons))
+    zoom = round(math.log2(360 / span), 2)
+    return f"{zoom}/{center_lat:.3f}/{center_lon:.3f}"
+
+def make_strava_client():
+    CLIENT_ID = os.getenv('STRAVA_CLIENT_ID')
+    CLIENT_SECRET = os.getenv('STRAVA_CLIENT_SECRET')
+    access_token = os.getenv('STRAVA_ACCESS_TOKEN')
+    refresh_token = os.getenv('STRAVA_REFRESH_TOKEN')
+    expires_at = os.getenv('STRAVA_TOKEN_EXPIRES_AT')
+
+    client = Client()
+
+    if not access_token:
+        # First-time setup: generate auth URL, exchange code for tokens
+        url = client.authorization_url(
+            client_id=CLIENT_ID,
+            redirect_uri='http://localhost',
+            scope=['read', 'activity:read_all']
+        )
+        print("Open this URL in your browser:\n", url)
+        code = input("\nPaste the 'code' from the redirect URL: ").strip()
+
+        token_response = client.exchange_code_for_token(
+            client_id=CLIENT_ID,
+            client_secret=CLIENT_SECRET,
+            code=code
+        )
+        access_token = token_response['access_token']
+        refresh_token = token_response['refresh_token']
+        expires_at = str(token_response['expires_at'])
+
+        set_key('.env', 'STRAVA_ACCESS_TOKEN', access_token)
+        set_key('.env', 'STRAVA_REFRESH_TOKEN', refresh_token)
+        set_key('.env', 'STRAVA_TOKEN_EXPIRES_AT', expires_at)
+        print("Tokens saved to .env")
+
+    client.access_token = access_token
+    client.refresh_token = refresh_token
+    client.token_expires = int(expires_at)
+    return client
 
 if __name__ == '__main__':
     data = pull_inreach()
