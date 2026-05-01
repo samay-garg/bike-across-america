@@ -98,6 +98,8 @@ template = env.get_template('activities.html')
 with open('activities.html', 'w') as f:
     f.write(template.render(activities=activity_list))
 
+last_updated = datetime.now().strftime('%B %d, %Y at %I:%M %p')
+
 template = env.get_template('index.html')
 with open('index.html', 'w') as f:
-    f.write(template.render(total_miles=f"{total_miles:,.0f}", progress_pct=progress_pct))
+    f.write(template.render(total_miles=f"{total_miles:,.0f}", progress_pct=progress_pct, last_updated=last_updated))
