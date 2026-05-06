@@ -1,6 +1,7 @@
 import folium
 import json
 import os
+import re
 import utils
 from datetime import datetime, timezone
 def colorgen():
@@ -102,5 +103,12 @@ folium.LayerControl(position='topright', collapsed=False).add_to(m)
 m.get_root().html.add_child(folium.Element('<link rel="stylesheet" href="css/folium-style.css">'))
 
 m.save("routemap.html")
+
+timestamp = datetime.now().strftime('%B %d, %Y at %I:%M %p')
+with open('index.html') as f:
+    index = f.read()
+index = re.sub(r'Last updated: .*', f'Last updated: {timestamp}', index)
+with open('index.html', 'w') as f:
+    f.write(index)
 
 print(f'map generated successfully at {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}')
